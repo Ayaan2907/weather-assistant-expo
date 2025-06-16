@@ -6,6 +6,13 @@ export type TemperatureUnit = 'celsius' | 'fahrenheit';
 export type WindSpeedUnit = 'kmh' | 'mph' | 'ms';
 export type PrecipitationUnit = 'mm' | 'inch';
 
+interface LastKnownLocation {
+  lat: number;
+  lon: number;
+  timestamp: number;
+  cityName?: string;
+}
+
 interface SettingsState {
   // Temperature settings
   temperatureUnit: TemperatureUnit;
@@ -34,6 +41,11 @@ interface SettingsState {
 
   refreshInterval: number; // in minutes
   setRefreshInterval: (interval: number) => void;
+
+  // Last known location
+  lastKnownLocation: LastKnownLocation | null;
+  setLastKnownLocation: (location: LastKnownLocation) => void;
+  clearLastKnownLocation: () => void;
 }
 
 export const useSettingsStore = create<SettingsState>()(
@@ -48,6 +60,7 @@ export const useSettingsStore = create<SettingsState>()(
       weatherAlertsEnabled: true,
       autoRefresh: true,
       refreshInterval: 30,
+      lastKnownLocation: null,
 
       // Actions
       setTemperatureUnit: (unit) => set({ temperatureUnit: unit }),
@@ -58,6 +71,8 @@ export const useSettingsStore = create<SettingsState>()(
       setWeatherAlertsEnabled: (enabled) => set({ weatherAlertsEnabled: enabled }),
       setAutoRefresh: (enabled) => set({ autoRefresh: enabled }),
       setRefreshInterval: (interval) => set({ refreshInterval: interval }),
+      setLastKnownLocation: (location) => set({ lastKnownLocation: location }),
+      clearLastKnownLocation: () => set({ lastKnownLocation: null }),
     }),
     {
       name: 'weather-app-settings',
