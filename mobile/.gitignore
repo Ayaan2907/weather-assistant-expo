@@ -1,4 +1,3 @@
-node_modules/
 .expo/
 dist/
 npm-debug.*
@@ -10,6 +9,10 @@ npm-debug.*
 *.orig.*
 web-build/
 
+# Dependencies
+node_modules/
+**/node_modules/
+**/node_modules/**/*
 
 
 

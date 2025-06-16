@@ -1,12 +1,14 @@
-import { View, Text, ScrollView } from 'react-native'
-import { ThemeToggle } from '@/components/ThemeToggle'
-import { useSettingsStore } from '@/lib/settings-store'
-import { 
-  SettingsSection, 
-  SettingsSwitch, 
-  SettingsSelector, 
-  SettingsRow 
-} from '@/components/SettingsComponents'
+import { View, Text, ScrollView } from 'react-native';
+
+import { useSettingsStore } from '~/lib/settings-store';
+import { useColorScheme } from '~/lib/useColorScheme';
+import {
+  SettingsSection,
+  SettingsSwitch,
+  SettingsSelector,
+  SettingsRow,
+} from '~/components/SettingsComponents';
+
 
 export default function SettingsScreen() {
   const {
@@ -26,38 +28,44 @@ export default function SettingsScreen() {
     setAutoRefresh,
     refreshInterval,
     setRefreshInterval,
-  } = useSettingsStore()
+  } = useSettingsStore();
+
+  const { colorScheme, setColorScheme } = useColorScheme();
 
   const temperatureOptions = [
     { label: 'Celsius (°C)', value: 'celsius' },
     { label: 'Fahrenheit (°F)', value: 'fahrenheit' },
-  ]
+  ];
 
   const windSpeedOptions = [
     { label: 'km/h', value: 'kmh' },
     { label: 'mph', value: 'mph' },
     { label: 'm/s', value: 'ms' },
-  ]
+  ];
 
   const precipitationOptions = [
     { label: 'Millimeters (mm)', value: 'mm' },
     { label: 'Inches (in)', value: 'inch' },
-  ]
+  ];
 
   const refreshIntervalOptions = [
     { label: '15 minutes', value: '15' },
     { label: '30 minutes', value: '30' },
     { label: '1 hour', value: '60' },
     { label: '2 hours', value: '120' },
-  ]
+  ];
+
+  const themeOptions = [
+    { label: 'Light', value: 'light' },
+    { label: 'Dark', value: 'dark' },
+    { label: 'System', value: 'system' },
+  ];
 
   return (
-    <ScrollView className="flex-1 bg-gray-100 dark:bg-gray-900">
+    <ScrollView className="flex-1 bg-background">
       <View className="p-5">
-        <Text className="text-3xl font-bold mb-8 text-gray-800 dark:text-white">
-          Settings
-        </Text>
-        
+        <Text className="mb-8 text-3xl font-bold text-foreground">Settings</Text>
+
         {/* Units Section */}
         <SettingsSection title="Units">
           <SettingsSelector
@@ -68,7 +76,7 @@ export default function SettingsScreen() {
             options={temperatureOptions}
             onValueChange={(value) => setTemperatureUnit(value as any)}
           />
-          
+
           <SettingsSelector
             title="Wind Speed"
             subtitle="Choose your preferred wind speed unit"
@@ -77,7 +85,7 @@ export default function SettingsScreen() {
             options={windSpeedOptions}
             onValueChange={(value) => setWindSpeedUnit(value as any)}
           />
-          
+
           <SettingsSelector
             title="Precipitation"
             subtitle="Choose your preferred precipitation unit"
@@ -90,13 +98,14 @@ export default function SettingsScreen() {
 
         {/* Appearance Section */}
         <SettingsSection title="Appearance">
-          <SettingsRow
+          <SettingsSelector
             title="Theme"
             subtitle="Choose your preferred app theme"
             icon="color-palette"
-          >
-            <ThemeToggle />
-          </SettingsRow>
+            value={colorScheme ?? 'system'}
+            options={themeOptions}
+            onValueChange={(value) => setColorScheme(value as 'light' | 'dark' | 'system')}
+          />
         </SettingsSection>
 
         {/* Location & Data Section */}
@@ -108,7 +117,7 @@ export default function SettingsScreen() {
             value={useCurrentLocation}
             onValueChange={setUseCurrentLocation}
           />
-          
+
           <SettingsSwitch
             title="Auto Refresh"
             subtitle="Automatically update weather data"
@@ -116,7 +125,7 @@ export default function SettingsScreen() {
             value={autoRefresh}
             onValueChange={setAutoRefresh}
           />
-          
+
           {autoRefresh && (
             <SettingsSelector
               title="Refresh Interval"
@@ -138,7 +147,7 @@ export default function SettingsScreen() {
             value={notificationsEnabled}
             onValueChange={setNotificationsEnabled}
           />
-          
+
           <SettingsSwitch
             title="Weather Alerts"
             subtitle="Get notified about severe weather conditions"
@@ -150,12 +159,8 @@ export default function SettingsScreen() {
 
         {/* About Section */}
         <SettingsSection title="About">
-          <SettingsRow
-            title="Version"
-            subtitle="1.0.0"
-            icon="information-circle"
-          />
-          
+          <SettingsRow title="Version" subtitle="1.0.0" icon="information-circle" />
+
           <SettingsRow
             title="Built with"
             subtitle="Expo Router, NativeWind & Zustand"
@@ -164,5 +169,5 @@ export default function SettingsScreen() {
         </SettingsSection>
       </View>
     </ScrollView>
-  )
-} 
+  );
+}

@@ -1,14 +1,22 @@
-import { View, Text } from 'react-native'
+import { View, Text } from 'react-native';
+import { Alert, AlertDescription, AlertTitle } from '~/components/ui/alert';
+import { AlertCircle } from 'lucide-react-native';
 
 export default function AlertsScreen() {
-  return (
-    <View className="flex-1 items-center justify-center p-5 bg-gray-100 dark:bg-gray-900">
-      <Text className="text-3xl font-bold mb-5 text-gray-800 dark:text-white">
-        Weather Alerts
-      </Text>
-      <Text className="text-base text-center text-gray-500 dark:text-gray-400">
+  return ( 
+    <View className="flex-1 items-center justify-center p-5 bg-background">
+      <Text className="mb-5 text-3xl font-bold text-foreground">Weather Alerts</Text>
+      <Alert icon={AlertCircle} iconSize={24} iconClassName="text-destructive" variant="destructive">
+        <AlertTitle>
+          <Text>Weather Alert</Text>
+        </AlertTitle>
+        <AlertDescription>
+          <Text>A severe weather alert has been issued for your area.</Text>
+        </AlertDescription>
+      </Alert>
+      <Text className="text-center text-base text-muted-foreground">
         No active weather alerts
       </Text>
     </View>
-  )
-} 
+  );
+}
