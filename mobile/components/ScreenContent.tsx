@@ -1,25 +1,25 @@
-import { Text, View } from 'react-native';
+import { View } from 'react-native';
+import { Text } from '~/components/ui/text';
 
-import { EditScreenInfo } from './EditScreenInfo';
+import EditScreenInfo from './EditScreenInfo';
 
-type ScreenContentProps = {
+export default function ScreenContent({
+  title,
+  path,
+  description,
+  children,
+}: {
   title: string;
   path: string;
-  children?: React.ReactNode;
-};
-
-export const ScreenContent = ({ title, path, children }: ScreenContentProps) => {
+  description: string;
+  children: React.ReactNode;
+}) {
   return (
-    <View className={styles.container}>
-      <Text className={styles.title}>{title}</Text>
-      <View className={styles.separator} />
-      <EditScreenInfo path={path} />
+    <View className="flex-1 items-center justify-center">
+      <Text className="text-xl font-bold">{title}</Text>
+      <View className="my-7 h-px w-4/5 bg-gray-200" />
+      <EditScreenInfo path={path} title={title} description={description} />
       {children}
     </View>
   );
-};
-const styles = {
-  container: `items-center flex-1 justify-center`,
-  separator: `h-[1px] my-7 w-4/5 bg-gray-200`,
-  title: `text-xl font-bold`,
-};
+}

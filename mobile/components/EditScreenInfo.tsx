@@ -1,19 +1,23 @@
-import { Text, View } from 'react-native';
+import { View } from 'react-native';
+import { Text } from '~/components/ui/text';
 
-export const EditScreenInfo = ({ path }: { path: string }) => {
-  const title = 'Open up the code for this screen:';
-  const description =
-    'Change any of the text, save the file, and your app will automatically update.';
-
+export default function EditScreenInfo({
+  path,
+  title,
+  description,
+}: {
+  path: string;
+  title: string;
+  description: string;
+}) {
   return (
-    <View className="bg-background">
-      <View className="items-center mx-12">
-        <Text className="text-lg leading-6 text-center text-foreground">{title}</Text>
-        <View className="rounded-md px-1 my-2 bg-muted">
-          <Text className="text-foreground">{path}</Text>
-        </View>
-        <Text className="text-lg leading-6 text-center text-muted-foreground">{description}</Text>
+    <View className="mx-12 items-center">
+      <View className="items-center">
+        <Text className="text-center text-lg leading-6 text-foreground">{title}</Text>
+        <View className="my-2 h-px w-4/5 bg-muted" />
+        <Text className="text-foreground">{path}</Text>
       </View>
+      <Text className="text-center text-lg leading-6 text-muted-foreground">{description}</Text>
     </View>
   );
-};
+}

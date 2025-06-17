@@ -1,35 +1,43 @@
-import { Tabs } from 'expo-router';
+import { Tabs, router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import { View, Text } from 'react-native';
+import { View, Pressable } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { Settings } from 'lucide-react-native';
 import { useColorScheme } from '~/lib/useColorScheme';
 import { useLocation } from '~/lib/useWeatherData';
 import { formatCoordinates } from '~/lib/utils';
+import { Text } from '~/components/ui/text';
 
 function LocationHeader() {
   const insets = useSafeAreaInsets();
   const { isDarkColorScheme } = useColorScheme();
-  const {  location, locationError,  locationLoading,  isUsingLastKnown,  lastKnownLocation, cityName, cityLoading
+  const {
+    location,
+    locationError,
+    locationLoading,
+    isUsingLastKnown,
+    lastKnownLocation,
+    cityName,
+    cityLoading,
   } = useLocation();
-
-
 
   const getLocationStatusText = () => {
     if (locationLoading) {
       return 'Getting location...';
     }
-    
+
     if (isUsingLastKnown && lastKnownLocation) {
       // Show city name if available, otherwise coordinates
-      const locationText = lastKnownLocation.cityName || 
-                          formatCoordinates(lastKnownLocation.lat, lastKnownLocation.lon);
+      const locationText =
+        lastKnownLocation.cityName ||
+        formatCoordinates(lastKnownLocation.lat, lastKnownLocation.lon);
       return `Last known (${locationText})`;
     }
-    
+
     if (locationError && !isUsingLastKnown) {
       return 'Location error';
     }
-    
+
     if (location) {
       // Show city name if available and not loading, otherwise coordinates
       if (cityLoading) {
@@ -37,7 +45,7 @@ function LocationHeader() {
       }
       return cityName || formatCoordinates(location.lat, location.lon);
     }
-    
+
     return 'No location';
   };
 
@@ -56,22 +64,20 @@ function LocationHeader() {
   };
 
   return (
-    <View style={{ 
-      paddingTop: insets.top,
-      paddingHorizontal: 16, 
-      paddingBottom: 8,
-      backgroundColor: isDarkColorScheme ? '#111827' : '#f9fafb',
-      borderBottomWidth: 1,
-      borderBottomColor: isDarkColorScheme ? '#374151' : '#e5e7eb',
-      alignItems: 'center' 
-    }}>
-      <Text style={{ 
-        fontSize: 12, 
-        color: getLocationStatusColor(),
-        textAlign: 'center'
-      }}>
-        {getLocationIcon()} {getLocationStatusText()}
-      </Text>
+    <View
+      className="flex-row items-center justify-between border-b border-gray-200 bg-gray-50 px-4 pb-2 dark:border-gray-700 dark:bg-gray-900"
+      style={{ paddingTop: insets.top }}>
+      <View className="flex-1 items-center">
+        <Text className="text-center text-xs" style={{ color: getLocationStatusColor() }}>
+          {getLocationIcon()} {getLocationStatusText()}
+        </Text>
+      </View>
+
+      <Pressable
+        onPress={() => router.push('/settings')}
+        className="rounded-full bg-gray-200 p-2 dark:bg-gray-700">
+        <Settings size={20} color={isDarkColorScheme ? '#f9fafb' : '#111827'} />
+      </Pressable>
     </View>
   );
 }
@@ -105,13 +111,6 @@ export default function TabLayout() {
           tabBarIcon: ({ color, size }) => (
             <Ionicons name="partly-sunny" size={size} color={color} />
           ),
-        }}
-      />
-      <Tabs.Screen
-        name="settings"
-        options={{
-          title: 'Settings',
-          tabBarIcon: ({ color, size }) => <Ionicons name="settings" size={size} color={color} />,
         }}
       />
     </Tabs>

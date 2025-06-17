@@ -122,4 +122,4 @@ export interface WeatherApiResponse {
   latitude: number;
   longitude: number;
   weatherData: WeatherData;
-} 
+}

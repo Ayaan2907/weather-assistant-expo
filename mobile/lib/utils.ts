@@ -9,8 +9,6 @@ export const formatCoordinates = (lat: number, lon: number) => {
   return `${lat.toFixed(4)}, ${lon.toFixed(4)}`;
 };
 
-
-
 export const temperatureOptions = [
   { label: 'Celsius (°C)', value: 'celsius' },
   { label: 'Fahrenheit (°F)', value: 'fahrenheit' },

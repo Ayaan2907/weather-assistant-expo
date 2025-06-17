@@ -38,8 +38,8 @@ function Alert({
   }) {
   const { colors } = useTheme();
   return (
-    <View role='alert' className={alertVariants({ variant, className })} {...props}>
-      <View className='absolute left-3.5 top-4 -translate-y-0.5'>
+    <View role="alert" className={alertVariants({ variant, className })} {...props}>
+      <View className="absolute left-3.5 top-4 -translate-y-0.5">
         <Icon
           size={iconSize}
           color={variant === 'destructive' ? colors.notification : colors.text}
@@ -54,7 +54,7 @@ function AlertTitle({ className, ...props }: React.ComponentProps<typeof Text>) 
   return (
     <Text
       className={cn(
-        'pl-7 mb-1 font-medium text-base leading-none tracking-tight text-foreground',
+        'mb-1 pl-7 text-base font-medium leading-none tracking-tight text-foreground',
         className
       )}
       {...props}

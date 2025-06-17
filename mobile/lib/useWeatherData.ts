@@ -2,15 +2,14 @@ import { useState, useEffect, useCallback, useMemo } from 'react';
 import * as Location from 'expo-location';
 import Constants from 'expo-constants';
 import { useSettingsStore } from './settings-store';
-import type { 
-  CurrentWeatherResponse, 
-  HourlyWeatherResponse, 
+import type {
+  CurrentWeatherResponse,
+  HourlyWeatherResponse,
   DailyWeatherResponse,
-  WeatherApiParams 
+  WeatherApiParams,
 } from './types/weather';
 
 const WEATHER_API_BASE_URL = Constants.expoConfig?.extra?.apiUrl || 'http://localhost:3000';
-
 
 export function useLocation() {
   const [location, setLocation] = useState<{ lat: number; lon: number } | null>(null);
@@ -37,13 +36,13 @@ export function useLocation() {
         if (location.city) parts.push(location.city);
         else if (location.district) parts.push(location.district);
         else if (location.subregion) parts.push(location.subregion);
-        
+
         if (location.region && parts.length > 0) {
           parts.push(location.region);
         } else if (location.region) {
           parts.push(location.region);
         }
-        
+
         if (location.country && parts.length > 0) {
           parts.push(location.country);
         }
@@ -73,7 +72,7 @@ export function useLocation() {
     const getCurrentLocation = async () => {
       setLocationLoading(true);
       setLocationError(null);
-      
+
       try {
         const { status } = await Location.requestForegroundPermissionsAsync();
         if (status !== 'granted') {
@@ -102,21 +101,20 @@ export function useLocation() {
 
         setLocation(newLocation);
         setIsUsingLastKnown(false);
-        
+
         // Get city name for current location
         getCityName(newLocation.lat, newLocation.lon);
-        
+
         setLastKnownLocation({
           lat: newLocation.lat,
           lon: newLocation.lon,
           timestamp: Date.now(),
         });
-        
       } catch (err) {
         const errorMessage = err instanceof Error ? err.message : 'Failed to get location';
         setLocationError(errorMessage);
         console.error('Location Error:', err);
-        
+
         // Fall back to last known location if available
         if (lastKnownLocation) {
           setLocation({
@@ -184,8 +182,10 @@ function useWeatherApi<T>(endpoint: string, params: WeatherApiParams, enabled: b
         ...(params.forecastDays && { forecastDays: params.forecastDays.toString() }),
       });
 
-      const response = await fetch(`${WEATHER_API_BASE_URL}/api/weather/${endpoint}?${searchParams}`);
-      
+      const response = await fetch(
+        `${WEATHER_API_BASE_URL}/api/weather/${endpoint}?${searchParams}`
+      );
+
       if (!response.ok) {
         throw new Error(`Weather API error: ${response.status} ${response.statusText}`);
       }
@@ -194,13 +194,23 @@ function useWeatherApi<T>(endpoint: string, params: WeatherApiParams, enabled: b
       setData(weatherData);
       setLastUpdated(new Date());
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : `Failed to fetch ${endpoint} weather`;
+      const errorMessage =
+        err instanceof Error ? err.message : `Failed to fetch ${endpoint} weather`;
       setError(errorMessage);
       console.error(`${endpoint} Weather API Error:`, err);
     } finally {
       setLoading(false);
     }
-  }, [endpoint, params.lat, params.lon, params.temperatureUnit, params.windSpeedUnit, params.precipitationUnit, params.forecastDays, enabled]);
+  }, [
+    endpoint,
+    params.lat,
+    params.lon,
+    params.temperatureUnit,
+    params.windSpeedUnit,
+    params.precipitationUnit,
+    params.forecastDays,
+    enabled,
+  ]);
 
   const refetch = useCallback(() => {
     fetchData();
@@ -217,21 +227,29 @@ function useWeatherApi<T>(endpoint: string, params: WeatherApiParams, enabled: b
 }
 
 // Hook for current weather (lightweight, frequent updates)
-export function useCurrentWeather(coordinates: { lat: number; lon: number }, options: { enableAutoRefresh?: boolean } = {}) {
-  const { temperatureUnit, windSpeedUnit, precipitationUnit, autoRefresh, refreshInterval } = useSettingsStore();
-  
+export function useCurrentWeather(
+  coordinates: { lat: number; lon: number },
+  options: { enableAutoRefresh?: boolean } = {}
+) {
+  const { temperatureUnit, windSpeedUnit, precipitationUnit, autoRefresh, refreshInterval } =
+    useSettingsStore();
+
   // Check if coordinates are valid
   const hasValidCoordinates = coordinates.lat !== 0 && coordinates.lon !== 0;
-  
-  const params = useMemo(() => ({
-    lat: coordinates.lat,
-    lon: coordinates.lon,
-    temperatureUnit,
-    windSpeedUnit,
-    precipitationUnit,
-  }), [coordinates.lat, coordinates.lon, temperatureUnit, windSpeedUnit, precipitationUnit]);
 
-  const { data, loading, error, refetch, lastUpdated, fetchData } = useWeatherApi<CurrentWeatherResponse>('current', params, hasValidCoordinates);
+  const params = useMemo(
+    () => ({
+      lat: coordinates.lat,
+      lon: coordinates.lon,
+      temperatureUnit,
+      windSpeedUnit,
+      precipitationUnit,
+    }),
+    [coordinates.lat, coordinates.lon, temperatureUnit, windSpeedUnit, precipitationUnit]
+  );
+
+  const { data, loading, error, refetch, lastUpdated, fetchData } =
+    useWeatherApi<CurrentWeatherResponse>('current', params, hasValidCoordinates);
 
   // Initial fetch
   useEffect(() => {
@@ -262,19 +280,33 @@ export function useCurrentWeather(coordinates: { lat: number; lon: number }, opt
 }
 
 // Hook for hourly weather (on-demand, when hourly tab is viewed)
-export function useHourlyWeather(coordinates: { lat: number; lon: number }, options: { forecastDays?: number; enabled?: boolean } = {}) {
+export function useHourlyWeather(
+  coordinates: { lat: number; lon: number },
+  options: { forecastDays?: number; enabled?: boolean } = {}
+) {
   const { temperatureUnit, windSpeedUnit, precipitationUnit } = useSettingsStore();
-  
-  const params = useMemo(() => ({
-    lat: coordinates.lat,
-    lon: coordinates.lon,
-    temperatureUnit,
-    windSpeedUnit,
-    precipitationUnit,
-    forecastDays: options.forecastDays || 3,
-  }), [coordinates.lat, coordinates.lon, temperatureUnit, windSpeedUnit, precipitationUnit, options.forecastDays]);
 
-  const { data, loading, error, refetch, lastUpdated, fetchData } = useWeatherApi<HourlyWeatherResponse>('hourly', params, options.enabled);
+  const params = useMemo(
+    () => ({
+      lat: coordinates.lat,
+      lon: coordinates.lon,
+      temperatureUnit,
+      windSpeedUnit,
+      precipitationUnit,
+      forecastDays: options.forecastDays || 3,
+    }),
+    [
+      coordinates.lat,
+      coordinates.lon,
+      temperatureUnit,
+      windSpeedUnit,
+      precipitationUnit,
+      options.forecastDays,
+    ]
+  );
+
+  const { data, loading, error, refetch, lastUpdated, fetchData } =
+    useWeatherApi<HourlyWeatherResponse>('hourly', params, options.enabled);
 
   // Fetch when enabled
   useEffect(() => {
@@ -293,19 +325,33 @@ export function useHourlyWeather(coordinates: { lat: number; lon: number }, opti
 }
 
 // Hook for daily weather (on-demand, when forecast tab is viewed)
-export function useDailyWeather(coordinates: { lat: number; lon: number }, options: { forecastDays?: number; enabled?: boolean } = {}) {
+export function useDailyWeather(
+  coordinates: { lat: number; lon: number },
+  options: { forecastDays?: number; enabled?: boolean } = {}
+) {
   const { temperatureUnit, windSpeedUnit, precipitationUnit } = useSettingsStore();
-  
-  const params = useMemo(() => ({
-    lat: coordinates.lat,
-    lon: coordinates.lon,
-    temperatureUnit,
-    windSpeedUnit,
-    precipitationUnit,
-    forecastDays: options.forecastDays || 7,
-  }), [coordinates.lat, coordinates.lon, temperatureUnit, windSpeedUnit, precipitationUnit, options.forecastDays]);
 
-  const { data, loading, error, refetch, lastUpdated, fetchData } = useWeatherApi<DailyWeatherResponse>('daily', params, options.enabled);
+  const params = useMemo(
+    () => ({
+      lat: coordinates.lat,
+      lon: coordinates.lon,
+      temperatureUnit,
+      windSpeedUnit,
+      precipitationUnit,
+      forecastDays: options.forecastDays || 7,
+    }),
+    [
+      coordinates.lat,
+      coordinates.lon,
+      temperatureUnit,
+      windSpeedUnit,
+      precipitationUnit,
+      options.forecastDays,
+    ]
+  );
+
+  const { data, loading, error, refetch, lastUpdated, fetchData } =
+    useWeatherApi<DailyWeatherResponse>('daily', params, options.enabled);
 
   // Fetch when enabled
   useEffect(() => {
@@ -326,12 +372,9 @@ export function useDailyWeather(coordinates: { lat: number; lon: number }, optio
 // Hook for getting current location weather with fallback to last known location
 export function useCurrentLocationWeather(options: { enableAutoRefresh?: boolean } = {}) {
   const locationData = useLocation();
-  
+
   // Always call useCurrentWeather - it will handle invalid coordinates internally
-  const weatherData = useCurrentWeather(
-    locationData.location || { lat: 0, lon: 0 }, 
-    options
-  );
+  const weatherData = useCurrentWeather(locationData.location || { lat: 0, lon: 0 }, options);
 
   return {
     ...weatherData,
@@ -340,14 +383,13 @@ export function useCurrentLocationWeather(options: { enableAutoRefresh?: boolean
 }
 
 // Hook for getting current location daily weather with fallback to last known location
-export function useCurrentLocationDailyWeather(options: { forecastDays?: number; enabled?: boolean } = {}) {
+export function useCurrentLocationDailyWeather(
+  options: { forecastDays?: number; enabled?: boolean } = {}
+) {
   const locationData = useLocation();
-  
+
   // Always call useDailyWeather - it will handle invalid coordinates internally
-  const weatherData = useDailyWeather(
-    locationData.location || { lat: 0, lon: 0 }, 
-    options
-  );
+  const weatherData = useDailyWeather(locationData.location || { lat: 0, lon: 0 }, options);
 
   return {
     ...weatherData,
@@ -357,10 +399,13 @@ export function useCurrentLocationDailyWeather(options: { forecastDays?: number;
 
 // Utility hook for demo/testing with fixed coordinates
 export function useDemoCurrentWeather(options: { enableAutoRefresh?: boolean } = {}) {
-  const coordinates = useMemo(() => ({
-    lat: 40.7128,
-    lon: -74.0060,
-  }), []);
+  const coordinates = useMemo(
+    () => ({
+      lat: 40.7128,
+      lon: -74.006,
+    }),
+    []
+  );
 
   return useCurrentWeather(coordinates, {
     enableAutoRefresh: false,
@@ -370,10 +415,13 @@ export function useDemoCurrentWeather(options: { enableAutoRefresh?: boolean } =
 
 // Utility hook for demo daily weather
 export function useDemoDailyWeather(options: { forecastDays?: number; enabled?: boolean } = {}) {
-  const coordinates = useMemo(() => ({
-    lat: 40.7128,
-    lon: -74.0060,
-  }), []);
+  const coordinates = useMemo(
+    () => ({
+      lat: 40.7128,
+      lon: -74.006,
+    }),
+    []
+  );
 
   return useDailyWeather(coordinates, {
     forecastDays: 7,
@@ -384,10 +432,13 @@ export function useDemoDailyWeather(options: { forecastDays?: number; enabled?: 
 
 // Utility hook for demo hourly weather
 export function useDemoHourlyWeather(options: { forecastDays?: number; enabled?: boolean } = {}) {
-  const coordinates = useMemo(() => ({
-    lat: 40.7128,
-    lon: -74.0060,
-  }), []);
+  const coordinates = useMemo(
+    () => ({
+      lat: 40.7128,
+      lon: -74.006,
+    }),
+    []
+  );
 
   return useHourlyWeather(coordinates, {
     forecastDays: 3,
