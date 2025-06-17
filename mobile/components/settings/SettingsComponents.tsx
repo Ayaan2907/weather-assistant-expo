@@ -17,8 +17,8 @@ export function SettingsSection({
 }) {
   return (
     <View className={`bg-card rounded-lg p-3 mb-3 ${className}`}>
-      {children}
-    </View>
+          {children}
+        </View>
   );
 }
 
@@ -31,26 +31,26 @@ interface SettingsSwitchProps {
   onValueChange: (value: boolean) => void;
 }
 
-export function SettingsSwitch({
-  title,
-  subtitle,
-  icon,
-  value,
+export function SettingsSwitch({ 
+  title, 
+  subtitle, 
+  icon, 
+  value, 
   onValueChange,
 }: SettingsSwitchProps) {
   const { isDarkColorScheme } = useColorScheme();
 
   return (
-    <Pressable
+    <Pressable 
       onPress={() => onValueChange(!value)}
       className="flex-row items-center justify-between py-1">
       <View className="flex-row items-center flex-1">
         {icon && (
           <View className="mr-3 w-8 h-8 items-center justify-center rounded-full bg-muted">
-            <Ionicons
-              name={icon as any}
-              size={18}
-              color={isDarkColorScheme ? '#9ca3af' : '#6b7280'}
+            <Ionicons 
+              name={icon as any} 
+              size={18} 
+              color={isDarkColorScheme ? '#9ca3af' : '#6b7280'} 
             />
           </View>
         )}
@@ -74,12 +74,12 @@ interface SettingsSelectorProps {
   onValueChange: (value: string) => void;
 }
 
-export function SettingsSelector({
-  title,
-  subtitle,
-  icon,
-  value,
-  options,
+export function SettingsSelector({ 
+  title, 
+  subtitle, 
+  icon, 
+  value, 
+  options, 
   onValueChange,
 }: SettingsSelectorProps) {
   const { isDarkColorScheme } = useColorScheme();
@@ -88,16 +88,16 @@ export function SettingsSelector({
 
   return (
     <View className="py-1">
-      <Pressable
+      <Pressable 
         onPress={() => setIsOpen(!isOpen)}
         className="flex-row items-center justify-between">
         <View className="flex-row items-center flex-1">
           {icon && (
             <View className="mr-3 w-8 h-8 items-center justify-center rounded-full bg-muted">
-              <Ionicons
-                name={icon as any}
-                size={18}
-                color={isDarkColorScheme ? '#9ca3af' : '#6b7280'}
+              <Ionicons 
+                name={icon as any} 
+                size={18} 
+                color={isDarkColorScheme ? '#9ca3af' : '#6b7280'} 
               />
             </View>
           )}
@@ -143,11 +143,11 @@ interface SettingsRowProps {
   showChevron?: boolean;
 }
 
-export function SettingsRow({
-  title,
-  subtitle,
-  icon,
-  onPress,
+export function SettingsRow({ 
+  title, 
+  subtitle, 
+  icon, 
+  onPress, 
   showChevron = false,
 }: SettingsRowProps) {
   const { isDarkColorScheme } = useColorScheme();
@@ -157,10 +157,10 @@ export function SettingsRow({
       <View className="flex-row items-center flex-1">
         {icon && (
           <View className="mr-3 w-8 h-8 items-center justify-center rounded-full bg-muted">
-            <Ionicons
-              name={icon as any}
-              size={18}
-              color={isDarkColorScheme ? '#9ca3af' : '#6b7280'}
+            <Ionicons 
+              name={icon as any} 
+              size={18} 
+              color={isDarkColorScheme ? '#9ca3af' : '#6b7280'} 
             />
           </View>
         )}
@@ -174,10 +174,10 @@ export function SettingsRow({
   );
 
   return onPress ? (
-    <Pressable onPress={onPress} className="active:opacity-70">
-      {content}
-    </Pressable>
+      <Pressable onPress={onPress} className="active:opacity-70">
+        {content}
+      </Pressable>
   ) : (
     content
-  );
+    );
 }

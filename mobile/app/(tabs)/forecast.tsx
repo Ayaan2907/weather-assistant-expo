@@ -1,26 +1,30 @@
-import { View, ScrollView, ActivityIndicator } from 'react-native';
+import React, { useState } from 'react'
+import { View, ScrollView, ActivityIndicator, RefreshControl } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { ArrowLeft } from 'lucide-react-native';
+
 import { useCurrentLocationDailyWeather } from '~/lib/useWeatherData';
-import { useSettingsStore } from '~/lib/settings-store';
 import { Text } from '~/components/ui/text';
-import { H1, H2, Large, Muted } from '~/components/ui/typography';
+import { H1, Large, Muted } from '~/components/ui/typography';
+import { Button } from '~/components/ui/button';
+import { ForecastList, DayWeatherDetail } from '~/components/forecast';
+import { extractDayData } from '~/lib/weather-utils';
 
 export default function ForecastScreen() {
-  const { temperatureUnit } = useSettingsStore();
-  const { data, loading, error, locationError, locationLoading } = useCurrentLocationDailyWeather({
+  const [selectedDayIndex, setSelectedDayIndex] = useState<number | null>(null);
+  const { data, loading, error, refetch, locationError, locationLoading } = useCurrentLocationDailyWeather({
     enabled: true,
   });
 
-  const formatTemperature = (temp: number) => {
-    const symbol = temperatureUnit === 'fahrenheit' ? '°F' : '°C';
-    return `${Math.round(temp)}${symbol}`;
+  const handleDaySelect = (dayIndex: number) => {
+    setSelectedDayIndex(dayIndex);
   };
 
-  const formatDate = (date: Date) => {
-    return date.toLocaleDateString([], { weekday: 'short', month: 'short', day: 'numeric' });
+  const handleBackToList = () => {
+    setSelectedDayIndex(null);
   };
 
-  if (loading) {
+  if (loading && !data) {
     return (
       <SafeAreaView
         className="flex-1 items-center justify-center bg-background p-5"
@@ -37,7 +41,7 @@ export default function ForecastScreen() {
       <SafeAreaView
         className="flex-1 items-center justify-center bg-background p-5"
         edges={['bottom']}>
-        <H2 className="mb-4 text-destructive">Error</H2>
+        <H1 className="mb-4 text-destructive">Error</H1>
         <Muted className="text-center">{error}</Muted>
         {locationError && (
           <Text className="mt-4 text-center text-sm text-orange-500">{locationError}</Text>
@@ -48,41 +52,48 @@ export default function ForecastScreen() {
 
   const dailyData = data?.daily;
 
+  // Show detailed day view
+  if (selectedDayIndex !== null && dailyData) {
+    const dayData = extractDayData(dailyData, selectedDayIndex);
+    
+    return (
+      <SafeAreaView className="flex-1 bg-background" edges={['bottom']}>
+        {/* Header with back button */}
+        <View className="flex-row items-center p-4 border-b border-border">
+          <Button
+            onPress={handleBackToList}
+            variant="ghost"
+            size="sm"
+            className="mr-3">
+            <ArrowLeft size={20} />
+          </Button>
+          <Text className="text-lg font-semibold">Weather Details</Text>
+        </View>
+
+        {/* Day weather detail with pull-to-refresh */}
+        <DayWeatherDetail 
+          dayData={dayData} 
+          dayIndex={selectedDayIndex}
+          onRefresh={refetch}
+          refreshing={loading}
+        />
+      </SafeAreaView>
+    );
+  }
+
+  // Show forecast list
   return (
     <SafeAreaView className="flex-1 bg-background" edges={['bottom']}>
-      <ScrollView className="flex-1">
+      <ScrollView 
+        className="flex-1"
+        refreshControl={
+          <RefreshControl refreshing={loading} onRefresh={refetch} />
+        }>
         <View className="p-5">
           <H1 className="mb-5">7-Day Forecast</H1>
 
-          {dailyData && dailyData.time.length > 0 ? (
-            <View className="space-y-3">
-              {dailyData.time.map((date: any, index: number) => (
-                <View
-                  key={index}
-                  className="flex-row items-center justify-between rounded-lg bg-card p-4">
-                  <View className="flex-1">
-                    <Large className="text-card-foreground">{formatDate(new Date(date))}</Large>
-                    <Muted>Weather Code: {dailyData.weatherCode[index]}</Muted>
-                  </View>
-
-                  <View className="flex-row items-center space-x-4">
-                    <View className="items-center">
-                      <Muted>High</Muted>
-                      <Text className="text-lg font-bold text-primary">
-                        {formatTemperature(dailyData.temperature2mMax[index])}
-                      </Text>
-                    </View>
-
-                    <View className="items-center">
-                      <Muted>Low</Muted>
-                      <Text className="text-lg font-medium text-muted-foreground">
-                        {formatTemperature(dailyData.temperature2mMin[index])}
-                      </Text>
-                    </View>
-                  </View>
-                </View>
-              ))}
-            </View>
+          {dailyData ? (
+            <ForecastList dailyData={dailyData} onDaySelect={handleDaySelect} />
           ) : (
             <Muted className="text-center">No forecast data available</Muted>
           )}

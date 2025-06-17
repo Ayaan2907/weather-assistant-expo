@@ -11,6 +11,47 @@ import type {
 
 const WEATHER_API_BASE_URL = Constants.expoConfig?.extra?.apiUrl || 'http://localhost:3000';
 
+// Global cache for hourly weather data (for notifications)
+let hourlyWeatherCache: {
+  data: HourlyWeatherResponse | null;
+  timestamp: number;
+  coordinates: { lat: number; lon: number };
+} | null = null;
+
+// Cache duration: 30 minutes
+const CACHE_DURATION = 30 * 60 * 1000;
+
+// Function to get cached hourly data for notifications
+export function getCachedHourlyWeatherForNotifications(): HourlyWeatherResponse | null {
+  if (!hourlyWeatherCache) return null;
+  
+  const now = Date.now();
+  const isExpired = now - hourlyWeatherCache.timestamp > CACHE_DURATION;
+  
+  if (isExpired) {
+    hourlyWeatherCache = null;
+    return null;
+  }
+  
+  return hourlyWeatherCache.data;
+}
+
+// Function to set cached hourly data
+function setCachedHourlyWeather(data: HourlyWeatherResponse, coordinates: { lat: number; lon: number }) {
+  hourlyWeatherCache = {
+    data,
+    timestamp: Date.now(),
+    coordinates
+  };
+}
+
+// Function to check if coordinates have changed significantly (for cache invalidation)
+function coordinatesChanged(oldCoords: { lat: number; lon: number }, newCoords: { lat: number; lon: number }): boolean {
+  const threshold = 0.01; // ~1km
+  return Math.abs(oldCoords.lat - newCoords.lat) > threshold || 
+         Math.abs(oldCoords.lon - newCoords.lon) > threshold;
+}
+
 export function useLocation() {
   const [location, setLocation] = useState<{ lat: number; lon: number } | null>(null);
   const [locationError, setLocationError] = useState<string | null>(null);
@@ -193,6 +234,14 @@ function useWeatherApi<T>(endpoint: string, params: WeatherApiParams, enabled: b
       const weatherData: T = await response.json();
       setData(weatherData);
       setLastUpdated(new Date());
+
+      // Cache hourly data for notifications
+      if (endpoint === 'hourly' && weatherData) {
+        setCachedHourlyWeather(weatherData as unknown as HourlyWeatherResponse, {
+          lat: params.lat,
+          lon: params.lon
+        });
+      }
     } catch (err) {
       const errorMessage =
         err instanceof Error ? err.message : `Failed to fetch ${endpoint} weather`;
@@ -282,7 +331,7 @@ export function useCurrentWeather(
 // Hook for hourly weather (on-demand, when hourly tab is viewed)
 export function useHourlyWeather(
   coordinates: { lat: number; lon: number },
-  options: { forecastDays?: number; enabled?: boolean } = {}
+  options: { forecastDays?: number; enabled?: boolean; enableCaching?: boolean } = {}
 ) {
   const { temperatureUnit, windSpeedUnit, precipitationUnit } = useSettingsStore();
 
@@ -308,12 +357,23 @@ export function useHourlyWeather(
   const { data, loading, error, refetch, lastUpdated, fetchData } =
     useWeatherApi<HourlyWeatherResponse>('hourly', params, options.enabled);
 
-  // Fetch when enabled
+  // Check cache first if caching is enabled
   useEffect(() => {
-    if (options.enabled) {
+    if (options.enabled && options.enableCaching) {
+      const cachedData = getCachedHourlyWeatherForNotifications();
+      if (cachedData && hourlyWeatherCache) {
+        // Check if coordinates are similar
+        if (!coordinatesChanged(hourlyWeatherCache.coordinates, coordinates)) {
+          // Use cached data but still fetch fresh data in background
+          fetchData();
+          return;
+        }
+      }
+      fetchData();
+    } else if (options.enabled) {
       fetchData();
     }
-  }, [fetchData, options.enabled]);
+  }, [fetchData, options.enabled, options.enableCaching, coordinates.lat, coordinates.lon]);
 
   return {
     data,
@@ -395,6 +455,24 @@ export function useCurrentLocationDailyWeather(
     ...weatherData,
     ...locationData,
   };
+}
+
+// Hook for getting current location hourly weather with fallback to last known location
+export function useCurrentLocationHourlyWeather(
+  options: { forecastDays?: number; enabled?: boolean; enableCaching?: boolean } = {}
+) {
+  const locationData = useLocation()
+
+  // Always call useHourlyWeather - it will handle invalid coordinates internally
+  const weatherData = useHourlyWeather(locationData.location || { lat: 0, lon: 0 }, {
+    ...options,
+    enableCaching: options.enableCaching ?? true // Enable caching by default for notifications
+  })
+
+  return {
+    ...weatherData,
+    ...locationData,
+  }
 }
 
 // Utility hook for demo/testing with fixed coordinates
