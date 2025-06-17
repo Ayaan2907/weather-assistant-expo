@@ -355,8 +355,7 @@ export default function WeatherAssistantPage() {
     setMessages(prev => [...prev, loadingMessage])
 
     try {
-        const { weatherCode, temperature2m } = weather.current
-      const { cityName } = useLocation()
+      const { weatherCode, temperature2m } = weather.current
       const description = getWeatherDescription(weatherCode)
       
       const WEATHER_API_BASE_URL = Constants.expoConfig?.extra?.apiUrl || 'http://localhost:3000'

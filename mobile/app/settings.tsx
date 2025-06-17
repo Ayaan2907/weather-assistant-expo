@@ -17,6 +17,7 @@ import {
   SettingsLoading,
   SettingsRow,
 } from '~/components/settings';
+import { NotificationTest } from '~/components/NotificationTest';
 
 export default function SettingsScreen() {
   const { isDarkColorScheme } = useColorScheme();
@@ -94,6 +95,9 @@ export default function SettingsScreen() {
         <SettingsSection>
           <NotificationsSection />
         </SettingsSection>
+
+        {/* Notification Test Section */}
+        <NotificationTest />
 
         {/* Reset Section */}
         <SettingsSection className="mb-0">

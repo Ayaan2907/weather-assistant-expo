@@ -56,13 +56,35 @@ export async function POST(request: Request) {
       
       Give me a brief 2-line suggestion about what to wear and one activity recommendation or any other tips as a friend.`;
       
-    } else if (mode === 'chat') {
-      // Chat mode - use conversation context
-      systemPrompt = `You are a helpful weather assistant. Current conditions: ${description}, ${temperature}°C (${getWeatherContext(weatherCode, temperature)}). 
-      
-      You're having a conversation about weather. Be friendly, helpful, and consider the current weather and location in your responses.`;
-      
-      // Build context from chat history (keep last 3 messages for simplicity)
+          } else if (mode === 'notification') {
+        // Notification mode - short, actionable content
+        systemPrompt = "You are a weather assistant creating push notifications. Be concise, friendly, and actionable in exactly 1 line.";
+        userPrompt = `Weather: ${description}, ${temperature}°C, location: ${location}.
+        
+        Create a friendly notification message (1 line) with a helpful suggestion or weather tip.`;
+        
+      } else if (mode === 'prediction') {
+        // Prediction mode - weather change alerts
+        const { predictionType, currentWeatherCode, currentTemperature, precipitationProbability } = body;
+        systemPrompt = "You are a weather assistant creating predictive alerts. Be helpful, specific, and actionable in 1 line.";
+        
+        if (predictionType === 'rain_starting') {
+          userPrompt = `Rain starting soon: currently ${currentTemperature}°C and ${getWeatherContext(currentWeatherCode, currentTemperature)}, rain probability rising to ${precipitationProbability}%. Create an alert with practical advice.`;
+        } else if (predictionType === 'temp_drop') {
+          userPrompt = `Temperature dropping from ${currentTemperature}°C to ${temperature}°C. Create a helpful alert about dressing appropriately.`;
+        } else if (predictionType === 'temp_rise') {
+          userPrompt = `Temperature rising from ${currentTemperature}°C to ${temperature}°C. Create a positive alert about the warming weather.`;
+        } else {
+          userPrompt = `Weather changing from ${getWeatherContext(currentWeatherCode, currentTemperature)} to ${description}, ${temperature}°C. Create a helpful transition alert.`;
+        }
+        
+      } else if (mode === 'chat') {
+        // Chat mode - use conversation context
+        systemPrompt = `You are a helpful weather assistant. Current conditions: ${description}, ${temperature}°C (${getWeatherContext(weatherCode, temperature)}). 
+        
+       You're having a conversation about weather. Be friendly, helpful, and consider the current weather and location in your responses.`;
+        
+        // Build context from chat history (keep last 3 messages for simplicity)
       const recentHistory = chatHistory ? chatHistory.slice(-3) : [];
       const contextMessages = recentHistory
         .map((msg: any) => `${msg.isAssistant ? 'Assistant' : 'User'}: ${msg.text}`)
@@ -80,7 +102,8 @@ Respond naturally, considering the current weather conditions.`;
 
     // Call Groq AI
     const response = await groq.chat.completions.create({
-      model: "llama3-8b-8192",
+    //   model: "llama3-8b-8192",
+      model: "compound-beta",
       messages: [
         { role: "system", content: systemPrompt },
         { role: "user", content: userPrompt }
