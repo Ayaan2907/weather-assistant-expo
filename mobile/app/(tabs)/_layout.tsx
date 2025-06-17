@@ -7,6 +7,7 @@ import { useColorScheme } from '~/lib/useColorScheme';
 import { useLocation } from '~/lib/useWeatherData';
 import { formatCoordinates } from '~/lib/utils';
 import { Text } from '~/components/ui/text';
+// import { FloatingAssistantButton } from '~/components/FloatingAssistantButton';
 
 function LocationHeader() {
   const insets = useSafeAreaInsets();
@@ -113,6 +114,7 @@ export default function TabLayout() {
           ),
         }}
       />
+    {/* <FloatingAssistantButton /> */}
     </Tabs>
   );
 }

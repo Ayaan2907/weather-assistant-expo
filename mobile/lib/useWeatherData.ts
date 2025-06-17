@@ -173,7 +173,7 @@ export function useLocation() {
     };
 
     getCurrentLocation();
-  }, [useCurrentLocation, setLastKnownLocation, getCityName]);
+  }, [useCurrentLocation, getCityName]);
 
   // Update last known location with city name when it's resolved
   useEffect(() => {

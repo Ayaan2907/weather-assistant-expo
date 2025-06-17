@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { View, ScrollView, ActivityIndicator, RefreshControl } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { ArrowLeft } from 'lucide-react-native';
@@ -15,6 +15,11 @@ export default function ForecastScreen() {
   const { data, loading, error, refetch, locationError, locationLoading } = useCurrentLocationDailyWeather({
     enabled: true,
   });
+
+  // Reset selectedDayIndex when component mounts
+  useEffect(() => {
+    setSelectedDayIndex(null)
+  }, [])
 
   const handleDaySelect = (dayIndex: number) => {
     setSelectedDayIndex(dayIndex);
